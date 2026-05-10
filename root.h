@@ -21,10 +21,10 @@ inline Engine_return root(chess::Board &pos,const int time_limit,const int sampl
     const auto t0=std::chrono::high_resolution_clock::now();
     size_t time=0;
     while (counter<sample_limit||sample_limit==0) {
-        search(puct,pos,depth);
+        search(puct,pos,depth,0);
         const auto t1=std::chrono::high_resolution_clock::now();
         time=std::chrono::duration_cast<std::chrono::milliseconds>(t1-t0).count();
-        if (time>=time_limit&&counter>moves.size()+1){break;}
+        if (time>=time_limit&&counter>0){break;}
         counter++;
     }
     if (verbose){std::cout<<"time: "<<time<<"\n========\n";}
