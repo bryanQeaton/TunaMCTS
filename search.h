@@ -38,7 +38,14 @@ inline Child uct_best(const float C,chess::Board &pos,const chess::Movelist &mov
     for (const auto &child:node.children) {
         const auto &child_node=game_tree[child.idx];
         float wr=child_node.visits? 1.f-child_node.winrate(): 0.5f;
-        const float uct=wr+C*child.prior*sqrtf(node.visits)/(1.f+child_node.visits);
+        uint64_t visits=child_node.visits;
+        Entry &entry=tt[child_node.hash];
+        if (entry.hash==child_node.hash&&entry.visits>0) {
+            wr=1.f-entry.value/entry.visits;
+            visits=entry.visits;
+        }
+
+        const float uct=wr+C*child.prior*sqrtf(node.visits)/(1.f+visits);
         if (uct>best_uct) {
             best_uct=uct;
             best_child=child;
@@ -46,10 +53,11 @@ inline Child uct_best(const float C,chess::Board &pos,const chess::Movelist &mov
     }
     return best_child;
 }
-inline float search(const float puct,chess::Board &pos,const int playout_maxdepth=100,const uint64_t idx=0) {
+inline float search(const float puct,chess::Board &pos,const uint64_t idx=0) {
     if (game_tree.empty()) {//if tree is empty
-        const float value=playout(pos,playout_maxdepth);
-        game_tree.add(value,1,pos.hash());
+        const float value=playout(pos);
+        game_tree.add(0.f,0,pos.hash());
+        game_tree.update_node(value,0);
         return value;
     }
     auto moves=chess::Movelist();
@@ -91,7 +99,7 @@ inline float search(const float puct,chess::Board &pos,const int playout_maxdept
         }
         const auto best_child=game_tree[idx].children[best_idx];
         pos.makeMove(best_child.move);
-        float value=playout(pos,playout_maxdepth);
+        float value=playout(pos);
         pos.unmakeMove(best_child.move);
         game_tree.update_node(value,best_child.idx);
         value=1.f-value;
@@ -101,7 +109,7 @@ inline float search(const float puct,chess::Board &pos,const int playout_maxdept
     //select
     const auto best=uct_best(puct,pos,moves,game_tree[idx]);
     pos.makeMove(best.move);
-    const float value=1.f-search(puct,pos,playout_maxdepth,best.idx);
+    const float value=1.f-search(puct,pos,best.idx);
     pos.unmakeMove(best.move);
     game_tree.update_node(value,idx);
     return value;

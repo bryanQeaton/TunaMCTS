@@ -4,6 +4,7 @@
 #include <vector>
 
 #include "chess.hpp"
+#include "tt.h"
 
 
 //stores information about the children of a given node.
@@ -42,6 +43,9 @@ public:
         auto &curr=tree[idx];
         curr.value+=value;
         curr.visits++;
+        Entry &entry=tt[curr.hash];
+        entry.value+=value;
+        entry.visits++;
     }
     void add_child_to_node(const chess::Move &move,const int child_idx,const float prior,const uint64_t idx) {
         auto &curr=tree[idx];
@@ -59,7 +63,15 @@ public:
         //if (idx>=size()){throw std::runtime_error("idx out of bounds!");}
         return tree[idx];
     }
-    void add(const float value,const uint64_t visits,const uint64_t hash){tree.push_back(Node(value,visits,hash));}
+    void add(const float value,const uint64_t visits,const uint64_t hash) {
+        Entry &entry=tt[hash];
+        if (entry.hash!=hash) {
+            entry.hash=hash;
+            entry.value=0;
+            entry.visits=0;
+        }
+        tree.push_back(Node(value,visits,hash));
+    }
     void pop(){tree.pop_back();}
     auto &back(){return tree.back();}
     size_t size() const {return tree.size();}

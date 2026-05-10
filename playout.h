@@ -5,7 +5,7 @@
 #include "random.h"
 
 //random playout with evaluation after depth
-inline float _playout(chess::Board &pos,const int depth=100) {
+inline float playout(const chess::Board &pos) {
     auto moves=chess::Movelist();
     chess::movegen::legalmoves(moves,pos);
     if (moves.empty()) {
@@ -13,13 +13,8 @@ inline float _playout(chess::Board &pos,const int depth=100) {
         return 0.5f;
     }
     if (pos.isHalfMoveDraw()||pos.isInsufficientMaterial()||pos.isRepetition(1)) {return 0.5f;}
-    if (depth<=0){return eval_prob(evaluation(pos));}
-    const chess::Move best=moves[fast_rand(moves.size())];
-    pos.makeMove(best);
-    return 1.f-_playout(pos,depth-1);
+    return eval_prob(evaluation(pos));
 }
-//playout wrapper function, call this.
-inline float playout(chess::Board pos,const int depth=100) {return _playout(pos,depth);}
 
 
 

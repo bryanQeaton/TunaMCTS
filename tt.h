@@ -5,8 +5,6 @@
 #include <cstdint>
 #include <cstring>
 
-constexpr size_t HASH_SIZE = 8;      // MB
-constexpr int  BUCKET_SIZE = 4;
 
 // Each entry is forced to 64 bytes (cache line size)
 struct alignas(64) Entry {
