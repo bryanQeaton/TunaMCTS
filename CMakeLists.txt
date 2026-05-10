@@ -19,5 +19,6 @@ add_executable(TunaMCTS main.cpp
         uci.h
         root.h
         debug.h
+        tt.h
 
 )

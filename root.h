@@ -3,6 +3,7 @@
 #include "chess.hpp"
 #include "search.h"
 #include "gametree.h"
+#include "tt.h"
 
 struct Engine_return {
     float value{}; //value of winning move
@@ -12,12 +13,13 @@ struct Engine_return {
 
 inline Engine_return root(chess::Board &pos,const int time_limit,const int sample_limit=0,const bool verbose=false) {
     game_tree.clear(); //temporary solution, aim to prune the irrelevant parts of the tree instead
+    tt.clear(); // this might not be necessary
     auto moves=chess::Movelist();
     chess::movegen::legalmoves(moves,pos);
     if (moves.size()==1){return {.5f,0,moves[0]};}
     uint64_t counter=0;
     constexpr float puct=1.8;
-    constexpr int depth=5;
+    constexpr int depth=0;
     const auto t0=std::chrono::high_resolution_clock::now();
     size_t time=0;
     while (counter<sample_limit||sample_limit==0) {
